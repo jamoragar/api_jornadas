@@ -27,3 +27,7 @@ Route::post('zipBonosSorteo', 'pagoManualBonoController@zipBonosSorteo');
 Route::post('descargarPorOC', 'pagoManualBonoController@descargarBonosPorOC');
 // Se usa por postman en caso de emergencia para generar un bono de forma manual
 Route::post('generarBonoAux', 'pagoManualBonoController@bonoAux');
+// Generacion de Alcancias
+Route::post('generaAlcancias', 'alcanciasController@generaAlcancias');
+// Generación de Talonarios
+Route::post('generaTalonarios', 'talonariosController@generaTalonarios');
