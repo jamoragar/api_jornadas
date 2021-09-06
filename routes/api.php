@@ -31,3 +31,8 @@ Route::post('generarBonoAux', 'pagoManualBonoController@bonoAux');
 Route::post('generaAlcancias', 'alcanciasController@generaAlcancias');
 // Generación de Talonarios
 Route::post('generaTalonarios', 'talonariosController@generaTalonarios');
+
+//Consultamos todos los Bonos vendidos a traves de Transbank
+Route::get('obtieneBonosVendidos', 'talonariosController@obtieneBonosVendidos');
+//Bonos vendidos de forma Manual
+Route::get('obtieneBonosManuales', 'talonariosController@obtieneBonosManuales');

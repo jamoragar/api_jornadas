@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Transactions;
 use Transbank\Webpay\Webpay;
 use Transbank\Webpay\Configuration;
+use Illuminate\Support\Facades\DB;
 
 class TransactionsController extends Controller
 {
@@ -16,7 +17,13 @@ class TransactionsController extends Controller
      */
     public function index()
     {
-        //
+        $last_id = DB::select(
+            'SELECT id FROM transactions ORDER BY id DESC LIMIT 1'
+        );
+        $last_id = array_map(function($value){
+            return (array)$value;
+        }, $last_id);
+        return $last_id[0]['id'];
     }
 
     /**
@@ -36,7 +43,7 @@ class TransactionsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+    { 
         $obj = new Class{};
         // Cambiar a url de producción al momento de hacer el release.
         // $url_retorno = 'http://localhost:8000/api/pago';
@@ -44,8 +51,18 @@ class TransactionsController extends Controller
         $url_retorno = 'https://appjornadasmagallanicas.cl/api/api/pago';
         $url_final = 'https://appjornadasmagallanicas.cl/api/api/pagoFinal';
 
-        if($request->sessionID && $request->monto && $request->cantidad && $request->orden_compra && $request->nombre && $request->email){
-
+        if($request->sessionID && $request->monto && $request->cantidad && $request->nombre && $request->rut){
+            DB::table('transactions')->insert(
+            ['sessionID' => $request->sessionID,
+            'monto' => $request->monto,
+            'cantidad' => $request->cantidad,
+            'nombre' => $request->nombre,
+            'apellido' => $request->apellido,
+            'rut' => $request->rut,
+            'telefono' => $request->telefono]
+            );
+            
+            $ultimo_id = $this->index();
             
             //Inicializamos configuración de Transbank
             $configuration = new Configuration();
@@ -53,7 +70,7 @@ class TransactionsController extends Controller
             $configuration->setCommerceCode(597035794077);
             //Cambiar a Producción
             $configuration->setEnvironment("PRODUCCION");
- $configuration->setPrivateKey("-----BEGIN RSA PRIVATE KEY-----
+$configuration->setPrivateKey("-----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEAxqFxCWM4Buk4Xm7P6iNwXn2fml5wsA5zRiEN7Y+ofv5xCwew
 gNwsY8FG+KuCNhk5urCY6U4xTNazF/tAhJMSy96sbc3rFUrnZ/bZW1dW+kF3SkDn
 nR3rbzibiMbhngYDYmHA305E/gV60l4xk6HRMxZF4to82ckZvi0XqcEpmp4C9i1/
@@ -102,40 +119,39 @@ VkFkD2Suw4FM7uRY12WmxKWJE0Z0YZvLB1EWMVhZ1nuDQIxdC49hw+S4Nh0red51
 r7tcmkiupIbC4GnelbVGI7E3AMd+fMn8ie+qumzchFlVB0FWr/Vf5cTbB54E96oj
 3CKEddpzJlQ1gvI+xAOBE2I3uWIhM60GS4RRXXtLkhGu8Shts/uRt+xyuuZrXReW
 CgqfFDXi06c=
------END CERTIFICATE-----"); 
-
+-----END CERTIFICATE-----");
+            //INTEGRACION
+            // $tb_transaction = (new Webpay(Configuration::forTestingWebpayPlusNormal()))
+            //    ->getNormalTransaction();
             $tb_transaction = (new Webpay($configuration))->getNormalTransaction();
 
             $tb_transaction->sessionID = $request->sessionID;
             $tb_transaction->monto = $request->monto;
             $tb_transaction->cantidad = $request->cantidad;
-            $tb_transaction->orden_compra = $request->orden_compra;
+            $tb_transaction->orden_compra = "JMAGALLANICA-$ultimo_id";
             $tb_transaction->nombre = $request->nombre;
             $tb_transaction->apellido = $request->apellido;
-            $tb_transaction->email = $request->email;
+            $tb_transaction->rut = $request->rut;
             
-
             //monto, id de sesion, numero de orden de compra, url de retorno, url final
             $initResult = $tb_transaction->initTransaction(
-                $tb_transaction->monto, $tb_transaction->orden_compra, $tb_transaction->sessionID, $url_retorno, $url_final
+                $tb_transaction->monto, "JMAGALLANICA-$ultimo_id", $tb_transaction->sessionID, $url_retorno, $url_final
             );
+            
             //Setiamos modelo para escribir en BD
             $transaction = new Transactions;
             $formAction = $initResult->url;
             $tokenWs = $initResult->token;
-            //guardamos los datos de la compra en nuestra BD
-            $transaction->sessionID = $tb_transaction->sessionID;
-            $transaction->monto = $tb_transaction->monto;
-            $transaction->cantidad = $tb_transaction->cantidad;
-            $transaction->orden_compra = $tb_transaction->orden_compra;
-            $transaction->nombre = $tb_transaction->nombre;
-            $transaction->apellido = $tb_transaction->apellido;
-            $transaction->email = $tb_transaction->email;
-            $transaction->token_ws = $tokenWs;
-            $transaction->telefono = $request->telefono ? $request->telefono : 'NA';
-            $transaction->uid = $request->uid ? $request->uid : 'plataforma_web';
-
-            $transaction->save();
+            //Setiamos hora
+            date_default_timezone_set("America/Santiago");
+            DB::table('transactions')
+                ->where('id', $ultimo_id)
+                ->update(
+                    ['orden_compra'=> "JMAGALLANICA-$ultimo_id",
+                    'created_at' => date_create(),
+                    'updated_at' => date_create(),
+                    'token_ws'=> $tokenWs,
+                    'uid'=> $request->uid ? $request->uid : 'plataforma_web']);
             
             $obj->token_ws = $tokenWs;
             $obj->url = strval($formAction);
@@ -147,6 +163,7 @@ CgqfFDXi06c=
 
             return json_encode($obj);
         }
+        
     }
 
     /**

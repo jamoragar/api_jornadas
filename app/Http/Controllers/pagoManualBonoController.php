@@ -142,32 +142,32 @@ class pagoManualBonoController extends Controller
     // Funcion para generar bono de forma manual en caso de emergencia...
     public function bonoAux(Request $request){
         date_default_timezone_set("America/Santiago");
-        $imgPath = public_path('img/bono/bono.jpg');
+        $imgPath = public_path('img/bono/bono.jpeg');
         $font = public_path('font/arial.ttf');
         $bono = DB::table('bonos_digitales')->orderBy('bono_digital', 'desc')->first();
-        DB::table('bonos_digitales')->insert(
+        DB::table('desa_jornadas.bonos_digitales')->insert(
             ['bono_digital' => $bono->bono_digital + $request->cantidad]
         );
 
         for($i = 1; $i <= $request->cantidad ; $i++){
             $our_image = imagecreatefromjpeg($imgPath);
     
-            imagettftext($our_image, 50, 0, 100, 150, 0x222222, $font, $bono->bono_digital + $i);
-            imagettftext($our_image, 50, 0, 700, 150, 0x222222, $font, $bono->bono_digital + $i);
-            imagettftext($our_image, 24, 90, 200, 720, 0x222222, $font, $request->nombre_cliente.' '.$request->apellido_cliente);
-            imagettftext($our_image, 24, 90, 295, 720, 0x222222, $font, $request->email);
-            imagettftext($our_image, 28, 90, 390, 720, 0x222222, $font, $request->telefono);
+            imagettftext($our_image, 50, 0, 380, 150, 0x222222, $font, $bono->bono_digital + $i);
+            imagettftext($our_image, 50, 0, 1100, 150, 0x222222, $font, $bono->bono_digital + $i);
+            imagettftext($our_image, 24, 90, 355, 720, 0x222222, $font, $request->nombre_cliente.' '.$request->apellido_cliente);
+            imagettftext($our_image, 24, 90, 555, 720, 0x222222, $font, $request->rut);
+            imagettftext($our_image, 28, 90, 765, 720, 0x222222, $font, $request->telefono);
     
             imageJpeg($our_image, public_path("img/bono_auxiliar").'/aporte'.$i.'_JMAGALLANICAS-'.$request->orden_compra.'.jpg', 85);
             imagedestroy($our_image);
             
-            DB::table('bonos_digitales_vendidos')->insert(
+            DB::table('desa_jornadas.bonos_digitales_vendidos')->insert(
                 ['nombre' => $request->nombre_cliente,
                 'apellido' => $request->apellido_cliente,
                 'correlativo' => $bono->bono_digital + $i,
                 'orden_compra'=> 'JMAGALLANICAS-'.$request->orden_compra,
                 'telefono' => $request->telefono,
-                'email' => $request->email]
+                'rut' => $request->rut]
             );
         }
 

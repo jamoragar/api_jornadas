@@ -58,7 +58,7 @@ class pagoExitosoController extends Controller
         $configuration = new Configuration();
         $configuration->setCommerceCode(597035794077);
         $configuration->setEnvironment("PRODUCCION");
-         $configuration->setPrivateKey("-----BEGIN RSA PRIVATE KEY-----
+        $configuration->setPrivateKey("-----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEAxqFxCWM4Buk4Xm7P6iNwXn2fml5wsA5zRiEN7Y+ofv5xCwew
 gNwsY8FG+KuCNhk5urCY6U4xTNazF/tAhJMSy96sbc3rFUrnZ/bZW1dW+kF3SkDn
 nR3rbzibiMbhngYDYmHA305E/gV60l4xk6HRMxZF4to82ckZvi0XqcEpmp4C9i1/
@@ -221,17 +221,17 @@ CgqfFDXi06c=
 
             //Retornamos a el boucher de transbank
             // $url_return = 'http://localhost:3000/procesa-pago/?';
-            $url_return = 'https://appjornadasmagallanicas.cl/procesa-pago/?';
+            $url_return = 'https://appjornadasmagallanicas.cl/procesa-exito/?';
 
-            $url_return .= $result->urlRedirection. '?';
-            $url_return .= $pago->token_ws. '?';
-            $url_return .= $pago->authorizationCode. '?';
-            $url_return .= $pago->amount. '?';
-            $url_return .= $pago->responseCode. '?';
-            $url_return .= $pago->buy_order. '?';
-            $url_return .= $pago->transactionDate. '?';
-            $url_return .= $pago->sessionId. '?';
-            $url_return .= $pago->paymentType;
+            // $url_return .= $result->urlRedirection. '?';
+            $url_return .= $pago->token_ws;
+            // $url_return .= $pago->authorizationCode. '?';
+            // $url_return .= $pago->amount. '?';
+            // $url_return .= $pago->responseCode. '?';
+            // $url_return .= $pago->buy_order. '?';
+            // $url_return .= $pago->transactionDate. '?';
+            // $url_return .= $pago->sessionId. '?';
+            // $url_return .= $pago->paymentType;
 
             return Redirect::to($url_return);
 
@@ -253,14 +253,15 @@ CgqfFDXi06c=
             //  $url_return = 'http://localhost:3000/pago-fallido/?';
             $url_return = 'https://appjornadasmagallanicas.cl/pago-fallido/?';
             
-            $url_return .= $pago->responseCode. '?';
-            $url_return .= $pago->buy_order. '?';
-            $url_return .= $pago->amount. '?';
-            $url_return .= $pago->token_ws. '?';
-            $url_return .= $pago->transactionDate. '?';
-            $url_return .= $pago->sessionId. '?';
-            $url_return .= $pago->uid. '?';
-            $url_return .= $pago->paymentType;
+            //$url_return .= $pago->responseCode. '?';
+            $url_return .= $pago->responseCode;
+            //$url_return .= $pago->buy_order. '?';
+            // $url_return .= $pago->amount. '?';
+            // $url_return .= $pago->token_ws. '?';
+            // $url_return .= $pago->transactionDate. '?';
+            // $url_return .= $pago->sessionId. '?';
+            // $url_return .= $pago->uid. '?';
+            // $url_return .= $pago->paymentType;
 
             return Redirect::to($url_return);
         }
